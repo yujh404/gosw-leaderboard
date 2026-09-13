@@ -1,0 +1,48 @@
+{
+  "name": "gosw-leaderboard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "NEXT_PUBLIC_APP_URL=http://localhost:3108 next build && playwright test",
+    "db:migrate": "tsx --env-file=.env.local scripts/migrate.ts",
+    "admin:password": "node scripts/password.mjs",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.4",
+    "lucide-react": "^1.45.0",
+    "motion": "^13.2.0",
+    "next": "16.3.5",
+    "pg": "^8.23.0",
+    "qrcode.react": "^4.2.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.4",
+    "zod": "^4.6.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/node": "^22.20.2",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.3.5",
+    "tsx": "^4.23.13",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0"
+  }
+}

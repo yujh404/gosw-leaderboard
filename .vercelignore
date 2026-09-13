@@ -1,0 +1,15 @@
+.env*
+.git/
+.next/
+.vercel/
+.agents/
+.pnpm-store/
+node_modules/
+test-results/
+playwright-report/
+coverage/
+skills-lock.json
+prompt.md
+e2e/
+tests/
+*.tsbuildinfo
