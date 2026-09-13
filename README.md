@@ -2,6 +2,8 @@
 
 경기오산소프트웨어고등학교 2026 체육대회 실시간 리더보드다. Next.js App Router, React, Neon PostgreSQL, Vercel을 사용한다.
 
+[공개 리더보드](https://leaderboard.gosw.dev) · [교사 관리자](https://leaderboard.gosw.dev/admin)
+
 ## 화면과 기능
 
 - `/`: 학생 공개 리더보드. 총점 순위, 종목 탭, 경기 상태, 설명·규칙, QR 공유·다운로드, 전체화면을 제공한다.
