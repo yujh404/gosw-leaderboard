@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { rankings, rankImprovements, rankScores } from "../src/lib/ranking";
+import {
+  rankings,
+  rankImprovements,
+  rankScores,
+  changedOverallLeaders,
+} from "../src/lib/ranking";
 import {
   emptyScores,
   type BoardSnapshot,
@@ -28,6 +33,55 @@ const board = (...events: SportEvent[]): BoardSnapshot => ({
 });
 
 describe("rankings", () => {
+  it("detects a new overall leader but ignores changes below first place", () => {
+    const before = board(event("a", { 1: 100, 2: 80, 3: 60, 4: 40, 5: 20 }));
+    const lowerChange = board(
+      event("a", { 1: 100, 2: 80, 3: 60, 4: 90, 5: 20 }),
+    );
+    expect(changedOverallLeaders(before, lowerChange)).toEqual([]);
+    const newLeader = board(
+      event("a", { 1: 100, 2: 80, 3: 60, 4: 90, 5: 150 }),
+    );
+    expect(
+      changedOverallLeaders(lowerChange, newLeader).map((team) => team.id),
+    ).toEqual([5]);
+    expect(
+      changedOverallLeaders(
+        newLeader,
+        board(event("a", { 1: 100, 2: 80, 3: 60, 4: 90, 5: 200 })),
+      ),
+    ).toEqual([]);
+  });
+  it("includes changes to joint leaders and the first positive score", () => {
+    const first = board(event("a", { ...emptyScores(), 1: 100 }));
+    expect(
+      changedOverallLeaders(board(), board(event("a", emptyScores()))),
+    ).toEqual([]);
+    expect(
+      changedOverallLeaders(board(), first).map((team) => team.id),
+    ).toEqual([1]);
+    const tied = board(event("a", { ...emptyScores(), 1: 100, 2: 100 }));
+    expect(changedOverallLeaders(first, tied).map((team) => team.id)).toEqual([
+      1, 2,
+    ]);
+    expect(
+      changedOverallLeaders(
+        tied,
+        board(event("a", { ...emptyScores(), 1: 90, 2: 100 })),
+      ).map((team) => team.id),
+    ).toEqual([2]);
+  });
+  it("ignores an event winner change when the overall leader stays the same", () => {
+    const before = board(
+      event("a", { ...emptyScores(), 1: 1000 }),
+      event("b", { ...emptyScores(), 2: 100 }),
+    );
+    const after = board(
+      event("a", { ...emptyScores(), 1: 1000 }),
+      event("b", { ...emptyScores(), 3: 150 }),
+    );
+    expect(changedOverallLeaders(before, after)).toEqual([]);
+  });
   it("uses competition ranking for ties, with stable class order", () => {
     expect(
       rankScores({ 1: 30, 2: 50, 3: 50, 4: 0, 5: 10 }).map(({ id, rank }) => [

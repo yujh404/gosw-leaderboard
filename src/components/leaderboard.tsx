@@ -20,7 +20,11 @@ import {
   Zap,
 } from "lucide-react";
 import { type BoardSnapshot, type RankedClass, CLASSES } from "@/lib/types";
-import { rankings, rankImprovements } from "@/lib/ranking";
+import {
+  rankings,
+  rankImprovements,
+  changedOverallLeaders,
+} from "@/lib/ranking";
 import { requestJson } from "@/lib/client";
 import { Header, Modal, Status, TeamIcon } from "./ui";
 import { ShareDialog } from "./share-dialog";
@@ -31,6 +35,7 @@ type Celebration = {
   rank: number;
   board: string;
   color: string;
+  headline?: string;
 };
 
 export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
@@ -42,9 +47,12 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
   const [fullScreen, setFullScreen] = useState(false);
   const [screenError, setScreenError] = useState("");
   const [celebration, setCelebration] = useState<Celebration[]>([]);
+  const [pendingLeaders, setPendingLeaders] = useState<Celebration[]>([]);
   const [lastSynced, setLastSynced] = useState("");
   const previous = useRef(initial);
   const selection = useRef(selected);
+  const rankingSection = useRef<HTMLElement>(null);
+  const movingToLeaders = useRef(false);
   const reducedMotion = useReducedMotion();
   useEffect(() => {
     selection.current = selected;
@@ -74,6 +82,7 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
         if (!active) return;
         const old = previous.current;
         if (old) {
+          const leaders = changedOverallLeaders(old, next);
           const currentId = selection.current;
           const name =
             currentId === "total"
@@ -81,7 +90,29 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
               : (next.events.find((event) => event.id === currentId)?.name ??
                 "종목 순위");
           const improvements = rankImprovements(old, next, currentId);
-          if (improvements.length)
+          if (leaders.length) {
+            const previousRanks = rankings(old);
+            movingToLeaders.current = true;
+            setSelected("total");
+            setRules(false);
+            setShare(false);
+            setScreenError("");
+            setCelebration([]);
+            setPendingLeaders(
+              leaders.map((team) => ({
+                ...team,
+                board: "종합 순위",
+                headline:
+                  leaders.length > 1
+                    ? `${team.name}, 공동 1위!`
+                    : previousRanks.find(
+                          (previousTeam) => previousTeam.id === team.id,
+                        )!.rank === 1
+                      ? `${team.name}, 현재 1위!`
+                      : `${team.name}, 1위로 상승!`,
+              })),
+            );
+          } else if (improvements.length && !movingToLeaders.current)
             setCelebration(
               improvements.map((team) => ({ ...team, board: name })),
             );
@@ -120,6 +151,49 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
   }, []);
 
   useEffect(() => {
+    const section = rankingSection.current;
+    if (!pendingLeaders.length || !section) return;
+    let frame = 0;
+    let settledFrames = 0;
+    movingToLeaders.current = true;
+    // Cancel a user-interrupted scroll rather than celebrate away from the ranking.
+    const timeout = window.setTimeout(() => {
+      cancelAnimationFrame(frame);
+      movingToLeaders.current = false;
+      setPendingLeaders([]);
+    }, 3000);
+    function checkPosition() {
+      const target = Math.max(
+        0,
+        Math.min(
+          section!.getBoundingClientRect().top + window.scrollY,
+          document.documentElement.scrollHeight - window.innerHeight,
+        ),
+      );
+      settledFrames =
+        Math.abs(window.scrollY - target) < 2 ? settledFrames + 1 : 0;
+      if (settledFrames >= 2) {
+        clearTimeout(timeout);
+        movingToLeaders.current = false;
+        setCelebration(pendingLeaders);
+        setPendingLeaders([]);
+      } else {
+        frame = requestAnimationFrame(checkPosition);
+      }
+    }
+    section.scrollIntoView({
+      behavior: reducedMotion ? "instant" : "smooth",
+      block: "start",
+    });
+    frame = requestAnimationFrame(checkPosition);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timeout);
+      movingToLeaders.current = false;
+    };
+  }, [pendingLeaders, reducedMotion]);
+
+  useEffect(() => {
     if (!celebration.length) return;
     if (!reducedMotion)
       void confetti({
@@ -130,7 +204,10 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
         disableForReducedMotion: true,
       });
     const timer = setTimeout(() => setCelebration([]), 5500);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      confetti.reset();
+    };
   }, [celebration, reducedMotion]);
 
   useEffect(() => {
@@ -223,7 +300,11 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
           </span>
         </div>
 
-        <section className="board-section" aria-label="리더보드">
+        <section
+          ref={rankingSection}
+          className="board-section"
+          aria-label="리더보드"
+        >
           <div className="section-top">
             <div className="section-label">
               <span className="accent-square" />
@@ -608,7 +689,10 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
               <small>{celebration[0].board} · RANK UP!</small>
               <strong>
                 {celebration
-                  .map((team) => `${team.name}, ${team.rank}위로 상승!`)
+                  .map(
+                    (team) =>
+                      team.headline ?? `${team.name}, ${team.rank}위로 상승!`,
+                  )
                   .join(" / ")}
               </strong>
             </div>

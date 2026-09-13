@@ -105,6 +105,62 @@ test("teacher manages events; independent student screens receive rankings, phot
       exact: true,
     }),
   });
+  const scrollPositions = [];
+  for (const viewer of [student, eventStudent]) {
+    await viewer.evaluate(() =>
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "instant",
+      }),
+    );
+    scrollPositions.push(await viewer.evaluate(() => window.scrollY));
+  }
+  await relay.getByRole("button", { name: "점수 입력", exact: true }).click();
+  await page.getByLabel("1학년 4반").fill("90");
+  await page.getByRole("button", { name: "점수 저장", exact: true }).click();
+  await expect(student.getByTestId("rank-4")).toHaveAttribute("data-rank", "2");
+  await expect(eventStudent.getByTestId("rank-4")).toHaveAttribute(
+    "data-rank",
+    "2",
+  );
+  await expect(
+    eventStudent.getByRole("tab", { name: "반 대항 이어달리기" }),
+  ).toHaveAttribute("aria-selected", "true");
+  for (const [index, viewer] of [student, eventStudent].entries()) {
+    expect(
+      Math.abs(
+        (await viewer.evaluate(() => window.scrollY)) - scrollPositions[index],
+      ),
+    ).toBeLessThan(2);
+  }
+
+  await eventStudent
+    .getByRole("tab", { name: "줄다리기", exact: true })
+    .click();
+  for (const viewer of [student, eventStudent]) {
+    await viewer.evaluate(() => {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "instant",
+      });
+      const observer = new MutationObserver(() => {
+        if (
+          !document
+            .querySelector(".celebration-toast")
+            ?.textContent?.includes("5반, 1위")
+        )
+          return;
+        document.documentElement.dataset.celebratedAtRanking = String(
+          Math.abs(
+            document.querySelector(".board-section")!.getBoundingClientRect()
+              .top,
+          ) < 2,
+        );
+        observer.disconnect();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  }
   await relay.getByRole("button", { name: "점수 입력", exact: true }).click();
   await page.getByLabel("1학년 5반").fill("150");
   await page.getByRole("button", { name: "점수 저장", exact: true }).click();
@@ -117,6 +173,15 @@ test("teacher manages events; independent student screens receive rankings, phot
   await expect(eventStudent.getByRole("status")).toContainText(
     "5반, 1위로 상승!",
   );
+  for (const viewer of [student, eventStudent]) {
+    await expect(
+      viewer.getByRole("tab", { name: "종합 순위", exact: true }),
+    ).toHaveAttribute("aria-selected", "true");
+    await expect(viewer.locator("html")).toHaveAttribute(
+      "data-celebrated-at-ranking",
+      "true",
+    );
+  }
   await expect(student.locator("canvas")).toBeVisible();
   await student.screenshot({
     path: "test-results/leaderboard-desktop.png",
@@ -188,6 +253,7 @@ test("teacher manages events; independent student screens receive rankings, phot
     ).status(),
   ).toBe(400);
 
+  await eventStudent.getByRole("tab", { name: "반 대항 이어달리기" }).click();
   await relay.getByRole("button", { name: "종목 수정" }).click();
   await page.getByLabel("경기 상태").selectOption("completed");
   await page.getByRole("button", { name: "변경사항 저장" }).click();

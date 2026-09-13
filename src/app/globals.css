@@ -576,6 +576,8 @@ a svg {
   text-align: right;
 }
 .rank-list {
+  /* Rank reordering must not move the reader's scroll position. */
+  overflow-anchor: none;
   display: flex;
   flex-direction: column;
   gap: 9px;

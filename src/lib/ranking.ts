@@ -40,3 +40,21 @@ export function rankImprovements(
     (team) => team.rank < before.find((other) => other.id === team.id)!.rank,
   );
 }
+
+export function changedOverallLeaders(
+  previous: BoardSnapshot,
+  next: BoardSnapshot,
+) {
+  const before = rankings(previous).filter(
+    (team) => team.rank === 1 && team.score > 0,
+  );
+  const after = rankings(next).filter(
+    (team) => team.rank === 1 && team.score > 0,
+  );
+  if (
+    before.length === after.length &&
+    before.every((team, index) => team.id === after[index].id)
+  )
+    return [];
+  return after;
+}
