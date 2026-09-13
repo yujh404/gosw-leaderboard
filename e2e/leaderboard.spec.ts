@@ -144,21 +144,45 @@ test("teacher manages events; independent student screens receive rankings, phot
         behavior: "instant",
       });
       const observer = new MutationObserver(() => {
+        const atRanking =
+          Math.abs(
+            document.querySelector(".board-section")!.getBoundingClientRect()
+              .top,
+          ) < 2;
+        if (
+          document.querySelector('[data-testid="rank-5"] .team-score strong')
+            ?.textContent === "150" &&
+          !document.documentElement.dataset.scoresAppliedAtRanking
+        ) {
+          document.documentElement.dataset.scoresAppliedAtRanking =
+            String(atRanking);
+        }
         if (
           !document
             .querySelector(".celebration-toast")
             ?.textContent?.includes("5반, 1위")
         )
           return;
-        document.documentElement.dataset.celebratedAtRanking = String(
-          Math.abs(
-            document.querySelector(".board-section")!.getBoundingClientRect()
-              .top,
-          ) < 2,
+        document.documentElement.dataset.celebratedAtRanking =
+          String(atRanking);
+        document.documentElement.dataset.celebratedAfterRankMoves = String(
+          Array.from(document.querySelectorAll(".rank-row")).every((row) => {
+            const transform = getComputedStyle(row).transform;
+            return (
+              transform === "none" ||
+              Math.abs(new DOMMatrixReadOnly(transform).m42) < 0.5
+            );
+          }),
         );
         observer.disconnect();
       });
-      observer.observe(document.body, { childList: true, subtree: true });
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["data-rank"],
+      });
     });
   }
   await relay.getByRole("button", { name: "점수 입력", exact: true }).click();
@@ -179,6 +203,14 @@ test("teacher manages events; independent student screens receive rankings, phot
     ).toHaveAttribute("aria-selected", "true");
     await expect(viewer.locator("html")).toHaveAttribute(
       "data-celebrated-at-ranking",
+      "true",
+    );
+    await expect(viewer.locator("html")).toHaveAttribute(
+      "data-scores-applied-at-ranking",
+      "true",
+    );
+    await expect(viewer.locator("html")).toHaveAttribute(
+      "data-celebrated-after-rank-moves",
       "true",
     );
   }

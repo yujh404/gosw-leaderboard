@@ -32,7 +32,7 @@ export function Header({ admin = false }: { admin?: boolean }) {
   return (
     <header className="site-header">
       <Link
-        href="/"
+        href={process.env.NEXT_PUBLIC_APP_URL || "/"}
         className="brand"
         aria-label="경기오산소프트웨어고 체육대회 홈"
       >
@@ -46,7 +46,10 @@ export function Header({ admin = false }: { admin?: boolean }) {
       </Link>
       <nav aria-label="주요 메뉴">
         <span className="school-name">경기오산소프트웨어고등학교</span>
-        <Link className="header-link" href={admin ? "/" : "/admin"}>
+        <Link
+          className="header-link"
+          href={admin ? process.env.NEXT_PUBLIC_APP_URL || "/" : "/admin"}
+        >
           {admin ? "리더보드 보기" : "교사 로그인"}
           <ArrowUpRight size={15} />
         </Link>

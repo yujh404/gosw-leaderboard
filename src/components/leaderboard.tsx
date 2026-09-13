@@ -28,6 +28,7 @@ import {
 import { requestJson } from "@/lib/client";
 import { Header, Modal, Status, TeamIcon } from "./ui";
 import { ShareDialog } from "./share-dialog";
+import { useReleaseUpdate } from "@/lib/use-release-update";
 
 type Celebration = {
   id: number;
@@ -38,7 +39,15 @@ type Celebration = {
   headline?: string;
 };
 
+type LeaderChange = {
+  snapshot: BoardSnapshot;
+  celebrations: Celebration[];
+  movingClasses: number[];
+  phase: "scrolling" | "ranking";
+};
+
 export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
+  useReleaseUpdate();
   const [board, setBoard] = useState(initial);
   const [selected, setSelected] = useState("total");
   const [connected, setConnected] = useState(Boolean(initial));
@@ -47,12 +56,13 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
   const [fullScreen, setFullScreen] = useState(false);
   const [screenError, setScreenError] = useState("");
   const [celebration, setCelebration] = useState<Celebration[]>([]);
-  const [pendingLeaders, setPendingLeaders] = useState<Celebration[]>([]);
+  const [leaderChange, setLeaderChange] = useState<LeaderChange | null>(null);
   const [lastSynced, setLastSynced] = useState("");
   const previous = useRef(initial);
   const selection = useRef(selected);
   const rankingSection = useRef<HTMLElement>(null);
   const movingToLeaders = useRef(false);
+  const awaitingRankAnimations = useRef(new Set<number>());
   const reducedMotion = useReducedMotion();
   useEffect(() => {
     selection.current = selected;
@@ -80,6 +90,9 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
           ]),
         });
         if (!active) return;
+        setConnected(true);
+        // Keep the displayed snapshot stable until the current presentation finishes.
+        if (movingToLeaders.current) return;
         const old = previous.current;
         if (old) {
           const leaders = changedOverallLeaders(old, next);
@@ -98,8 +111,13 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
             setShare(false);
             setScreenError("");
             setCelebration([]);
-            setPendingLeaders(
-              leaders.map((team) => ({
+            setLeaderChange({
+              snapshot: next,
+              phase: "scrolling",
+              movingClasses: rankings(next)
+                .filter((team, index) => team.id !== previousRanks[index].id)
+                .map((team) => team.id),
+              celebrations: leaders.map((team) => ({
                 ...team,
                 board: "종합 순위",
                 headline:
@@ -111,7 +129,8 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
                       ? `${team.name}, 현재 1위!`
                       : `${team.name}, 1위로 상승!`,
               })),
-            );
+            });
+            return;
           } else if (improvements.length && !movingToLeaders.current)
             setCelebration(
               improvements.map((team) => ({ ...team, board: name })),
@@ -119,7 +138,6 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
         }
         previous.current = next;
         setBoard(next);
-        setConnected(true);
         setLastSynced(
           new Date().toLocaleTimeString("ko-KR", {
             hour: "2-digit",
@@ -152,7 +170,7 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
 
   useEffect(() => {
     const section = rankingSection.current;
-    if (!pendingLeaders.length || !section) return;
+    if (leaderChange?.phase !== "scrolling" || !section) return;
     let frame = 0;
     let settledFrames = 0;
     movingToLeaders.current = true;
@@ -160,7 +178,9 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
     const timeout = window.setTimeout(() => {
       cancelAnimationFrame(frame);
       movingToLeaders.current = false;
-      setPendingLeaders([]);
+      previous.current = leaderChange.snapshot;
+      setBoard(leaderChange.snapshot);
+      setLeaderChange(null);
     }, 3000);
     function checkPosition() {
       const target = Math.max(
@@ -174,9 +194,18 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
         Math.abs(window.scrollY - target) < 2 ? settledFrames + 1 : 0;
       if (settledFrames >= 2) {
         clearTimeout(timeout);
-        movingToLeaders.current = false;
-        setCelebration(pendingLeaders);
-        setPendingLeaders([]);
+        previous.current = leaderChange!.snapshot;
+        setBoard(leaderChange!.snapshot);
+        awaitingRankAnimations.current = new Set(leaderChange!.movingClasses);
+        setLastSynced(
+          new Date().toLocaleTimeString("ko-KR", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+          }),
+        );
+        setLeaderChange({ ...leaderChange!, phase: "ranking" });
       } else {
         frame = requestAnimationFrame(checkPosition);
       }
@@ -189,9 +218,48 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
     return () => {
       cancelAnimationFrame(frame);
       clearTimeout(timeout);
-      movingToLeaders.current = false;
     };
-  }, [pendingLeaders, reducedMotion]);
+  }, [leaderChange, reducedMotion]);
+
+  useEffect(() => {
+    if (
+      leaderChange?.phase !== "ranking" ||
+      (!reducedMotion && leaderChange.movingClasses.length)
+    )
+      return;
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => {
+        movingToLeaders.current = false;
+        setCelebration(leaderChange.celebrations);
+        setLeaderChange(null);
+      });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [leaderChange, reducedMotion]);
+
+  function rankAnimationFinished(classId: number) {
+    if (
+      leaderChange?.phase !== "ranking" ||
+      !awaitingRankAnimations.current.delete(classId)
+    )
+      return;
+    if (!awaitingRankAnimations.current.size) {
+      movingToLeaders.current = false;
+      setCelebration(leaderChange.celebrations);
+      setLeaderChange(null);
+    }
+  }
+
+  function selectTab(id: string) {
+    if (leaderChange) {
+      previous.current = leaderChange.snapshot;
+      setBoard(leaderChange.snapshot);
+      setLeaderChange(null);
+      movingToLeaders.current = false;
+      awaitingRankAnimations.current.clear();
+    }
+    setSelected(id);
+  }
 
   useEffect(() => {
     if (!celebration.length) return;
@@ -239,7 +307,10 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
   return (
     <>
       <Header />
-      <main className="page-shell">
+      <main
+        className="page-shell"
+        data-app-version={process.env.NEXT_PUBLIC_BUILD_ID}
+      >
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">
@@ -361,7 +432,7 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
               aria-controls="ranking-panel"
               tabIndex={activeId === "total" ? 0 : -1}
               className={activeId === "total" ? "active" : ""}
-              onClick={() => setSelected("total")}
+              onClick={() => selectTab("total")}
             >
               <Trophy size={17} />
               종합 순위
@@ -375,7 +446,7 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
                 aria-controls="ranking-panel"
                 tabIndex={activeId === event.id ? 0 : -1}
                 className={activeId === event.id ? "active" : ""}
-                onClick={() => setSelected(event.id)}
+                onClick={() => selectTab(event.id)}
               >
                 {event.status === "live" && <span className="live-dot" />}
                 {event.name}
@@ -449,6 +520,7 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
                       team={team}
                       topScore={topScore}
                       reducedMotion={Boolean(reducedMotion)}
+                      onRankAnimationFinished={rankAnimationFinished}
                     />
                   ))
                 )}
@@ -564,7 +636,7 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
                   key={event.id}
                   className={`event-card ${event.status === "live" ? "event-card-live" : ""}`}
                   onClick={() => {
-                    setSelected(event.id);
+                    selectTab(event.id);
                     document.querySelector(".board-section")?.scrollIntoView({
                       behavior: reducedMotion ? "instant" : "smooth",
                     });
@@ -708,15 +780,18 @@ function RankRow({
   team,
   topScore,
   reducedMotion,
+  onRankAnimationFinished,
 }: {
   team: RankedClass;
   topScore: number;
   reducedMotion: boolean;
+  onRankAnimationFinished: (classId: number) => void;
 }) {
   const isFirst = team.rank === 1 && team.score > 0;
   return (
     <motion.div
       layout={!reducedMotion}
+      onLayoutAnimationComplete={() => onRankAnimationFinished(team.id)}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className={`rank-row ${isFirst ? "rank-first" : ""}`}
       data-testid={`rank-${team.id}`}
