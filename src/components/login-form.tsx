@@ -13,7 +13,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { jsonBody, requestJson } from "@/lib/client";
-import { Header } from "./ui";
+import { Header, SparkIcon } from "./ui";
 
 export function LoginForm() {
   const router = useRouter();
@@ -53,7 +53,9 @@ export function LoginForm() {
             <br />
             <em>TEAM.</em>
           </span>
-          <i>✳</i>
+          <i>
+            <SparkIcon />
+          </i>
           <p>THE PEOPLE BEHIND THE MOMENT</p>
         </div>
         <div className="login-card">

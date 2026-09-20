@@ -28,7 +28,7 @@ import {
   type SportEvent,
 } from "@/lib/types";
 import { jsonBody, requestJson, RequestError } from "@/lib/client";
-import { Header, Modal, Status, TeamIcon } from "./ui";
+import { Header, Modal, SparkIcon, Status, TeamIcon } from "./ui";
 import { ShareDialog } from "./share-dialog";
 
 export function AdminDashboard({ initial }: { initial: BoardSnapshot }) {
@@ -116,7 +116,10 @@ export function AdminDashboard({ initial }: { initial: BoardSnapshot }) {
           <div>
             <div className="eyebrow">TEACHER’S DESK</div>
             <h1>
-              경기 운영 센터<span>✳</span>
+              경기 운영 센터
+              <span>
+                <SparkIcon />
+              </span>
             </h1>
             <p>경기의 순간을 기록하면, 모두의 순위가 바뀝니다.</p>
           </div>

@@ -31,6 +31,7 @@ test("themes default to pink, persist across pages, and synchronize other tabs",
     await expect(
       page.getByRole("tab", { name: "종합 순위", exact: true }),
     ).toHaveCSS("background-color", accent);
+    await expect(page.locator(".hero-spark svg")).toHaveCSS("stroke", accent);
     await page.reload();
     await expect(selector).toHaveValue(theme);
     await expect(page.locator("body")).toHaveCSS(

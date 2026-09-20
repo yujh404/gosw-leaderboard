@@ -140,6 +140,10 @@ p {
 svg {
   flex-shrink: 0;
 }
+.spark-icon {
+  display: inline-block;
+  vertical-align: -0.125em;
+}
 button svg,
 a svg {
   vertical-align: middle;
@@ -2104,7 +2108,8 @@ input[type="file"]::file-selector-button {
   }
   .hero-art {
     position: absolute;
-    right: -33px;
+    right: 16px;
+    margin-right: 0;
     opacity: 0.65;
     transform: scale(0.75);
     transform-origin: right center;
@@ -2333,10 +2338,9 @@ input[type="file"]::file-selector-button {
     margin-left: 13px;
   }
   .hero-art {
-    right: -68px;
-    transform: scale(0.52);
-    opacity: 0.5;
-    top: 23px;
+    transform: scale(0.48);
+    opacity: 0.8;
+    top: 32px;
   }
   .trophy-plinth {
     left: 130px;
@@ -2885,5 +2889,11 @@ input[type="file"]::file-selector-button {
   }
   .theme-selector select {
     min-height: 44px;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-art {
+    transform: scale(0.42);
   }
 }

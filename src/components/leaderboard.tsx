@@ -26,7 +26,7 @@ import {
   changedOverallLeaders,
 } from "@/lib/ranking";
 import { requestJson } from "@/lib/client";
-import { Header, Modal, Status, TeamIcon } from "./ui";
+import { Header, Modal, SparkIcon, Status, TeamIcon } from "./ui";
 import { ShareDialog } from "./share-dialog";
 import { useReleaseUpdate } from "@/lib/use-release-update";
 
@@ -314,13 +314,18 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
         <section className="hero">
           <div className="hero-copy">
             <div className="eyebrow">
-              <span className="tiny-star">✳</span> 2026 GOSW SPORTS FESTIVAL
+              <span className="tiny-star">
+                <SparkIcon />
+              </span>{" "}
+              2026 GOSW SPORTS FESTIVAL
             </div>
             <h1>
               오늘의 주인공은,
               <br />
               <span>우리 반.</span>
-              <i className="hero-spark">✳</i>
+              <i className="hero-spark">
+                <SparkIcon />
+              </i>
             </h1>
             <p>
               함께 뛰고, 함께 외치고.
@@ -339,7 +344,9 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
             <div className="orbit orbit-one" />
             <div className="orbit orbit-two" />
             <div className="orbit orbit-three" />
-            <span className="art-star star-one">✳</span>
+            <span className="art-star star-one">
+              <SparkIcon />
+            </span>
             <span className="art-star star-two">✦</span>
             <div className="trophy-plinth">
               <Trophy size={120} strokeWidth={1.1} />
@@ -706,7 +713,10 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
           </span>
           <p>땀나는 오늘, 빛나는 우리.</p>
           <span>
-            MADE FOR OUR MOMENT <span className="lime">✳</span>
+            MADE FOR OUR MOMENT{" "}
+            <span className="lime">
+              <SparkIcon />
+            </span>
           </span>
         </footer>
       </main>
@@ -768,7 +778,9 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
                   .join(" / ")}
               </strong>
             </div>
-            <span className="toast-spark">✳</span>
+            <span className="toast-spark">
+              <SparkIcon />
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
