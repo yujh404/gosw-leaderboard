@@ -1,13 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap");
 
 :root {
-  --bg: #fff3f7;
   --panel: #fff;
-  --panel-raised: #f8e3eb;
-  --line: #edd5df;
-  --text: #4b2c39;
-  --muted: #7b5767;
-  --accent: #b43c6b;
   --on-accent: #fff;
   --accent-soft: color-mix(in srgb, var(--accent) 5%, var(--panel));
   --accent-line: color-mix(in srgb, var(--accent) 35%, var(--line));
@@ -29,7 +23,17 @@
   --font: "Noto Sans KR", Arial, sans-serif;
   color-scheme: light;
 }
-:root[data-theme="mint"] {
+:root,
+.theme-palette[data-theme="pink"] {
+  --bg: #fff3f7;
+  --panel-raised: #f8e3eb;
+  --line: #edd5df;
+  --text: #4b2c39;
+  --muted: #7b5767;
+  --accent: #b43c6b;
+}
+:root[data-theme="mint"],
+.theme-palette[data-theme="mint"] {
   --bg: #f2f8f3;
   --panel-raised: #e1efea;
   --line: #d5e4d8;
@@ -37,7 +41,8 @@
   --muted: #536b5a;
   --accent: #16786b;
 }
-:root[data-theme="sky"] {
+:root[data-theme="sky"],
+.theme-palette[data-theme="sky"] {
   --bg: #f1f6fc;
   --panel-raised: #e2ecf7;
   --line: #d5e1ef;
@@ -45,7 +50,8 @@
   --muted: #546b82;
   --accent: #3568c8;
 }
-:root[data-theme="ivory"] {
+:root[data-theme="ivory"],
+.theme-palette[data-theme="ivory"] {
   --bg: #faf7f0;
   --panel-raised: #f5e9dd;
   --line: #e7dfcd;
@@ -53,7 +59,8 @@
   --muted: #716a53;
   --accent: #b0572d;
 }
-:root[data-theme="lime"] {
+:root[data-theme="lime"],
+.theme-palette[data-theme="lime"] {
   --bg: #f7faee;
   --panel-raised: #edf2d9;
   --line: #dde5c8;
@@ -61,7 +68,8 @@
   --muted: #626d4d;
   --accent: #60751f;
 }
-:root[data-theme="gray"] {
+:root[data-theme="gray"],
+.theme-palette[data-theme="gray"] {
   --bg: #f5f6f7;
   --panel-raised: #e8eaed;
   --line: #dadee3;
@@ -226,32 +234,158 @@ a svg {
   gap: 22px;
 }
 .theme-selector {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin: 0;
+}
+.theme-trigger {
   display: flex;
   align-items: center;
-  gap: 7px;
-  margin: 0;
+  gap: 8px;
+  width: 116px;
+  height: 44px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--panel);
+  border: 1px solid var(--accent-line);
+  border-radius: 10px;
+  color: var(--text);
+}
+.theme-trigger:hover,
+.theme-trigger[aria-expanded="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.theme-trigger-swatch {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.theme-trigger > span:nth-child(2) {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+.theme-chevron {
+  color: var(--muted);
+  transition: transform 0.18s;
+}
+.theme-trigger[aria-expanded="true"] .theme-chevron {
+  transform: rotate(180deg);
+}
+.theme-layer {
+  position: fixed;
+  z-index: 60;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow:
+    0 16px 48px var(--shadow-strong),
+    0 4px 12px var(--shadow);
+}
+.theme-layer-title {
+  margin: 3px 7px 9px;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--muted);
 }
-.theme-selector select {
-  width: auto;
-  min-height: 38px;
-  padding: 8px 10px;
-  font-size: 12px;
-  background: var(--panel);
-  border-color: var(--line);
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
   color: var(--text);
+  text-align: left;
+}
+.theme-option + .theme-option {
+  margin-top: 3px;
+}
+.theme-option:hover {
+  background: var(--panel-raised);
+}
+.theme-option[aria-checked="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.theme-option:focus-visible {
+  outline-offset: -2px;
+}
+.theme-option-swatch {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 700;
+}
+.theme-option-swatch i {
+  position: absolute;
+  right: -3px;
+  bottom: -2px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--panel);
+  border-radius: 50%;
+  background: var(--accent);
+}
+.theme-option-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 600;
+}
+.theme-option-check {
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--on-accent);
+}
+.theme-option[aria-checked="true"] .theme-option-check {
+  background: var(--accent);
+  border-color: var(--accent);
 }
 .school-name {
   font-size: 12px;
   color: var(--muted);
 }
 .header-link {
-  display: flex;
-  gap: 8px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
   color: var(--text);
 }
 .header-link:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
   color: var(--accent);
 }
 .page-shell {
@@ -2306,9 +2440,6 @@ input[type="file"]::file-selector-button {
   .school-name {
     display: none;
   }
-  .header-link {
-    font-size: 10px;
-  }
   .page-shell {
     padding-left: 17px;
     padding-right: 17px;
@@ -2896,9 +3027,7 @@ input[type="file"]::file-selector-button {
     width: 18px;
     height: 18px;
   }
-  .brand small,
-  .theme-selector > svg,
-  .header-link > svg {
+  .brand small {
     display: none;
   }
   .site-header nav {
@@ -2910,18 +3039,9 @@ input[type="file"]::file-selector-button {
   .theme-selector {
     min-width: 0;
   }
-  .theme-selector select {
-    min-width: 0;
-    height: 44px;
-    min-height: 44px;
-    padding-inline: 6px;
-  }
-  .header-link {
-    flex-shrink: 0;
-    min-height: 44px;
-    align-items: center;
-    font-size: 10px;
-    white-space: nowrap;
+  .theme-trigger {
+    width: 110px;
+    padding-inline: 8px;
   }
 }
 

@@ -265,7 +265,8 @@ export function Leaderboard({ initial }: { initial: BoardSnapshot | null }) {
     if (!celebration.length) return;
     if (!reducedMotion)
       void confetti({
-        particleCount: 120,
+        particleCount: 160,
+        scalar: 1.25,
         spread: 85,
         origin: { y: 0.64 },
         colors: celebration.map((team) => team.color),

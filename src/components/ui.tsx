@@ -10,7 +10,8 @@ import {
   CircuitBoard,
   Trophy,
   X,
-  ArrowUpRight,
+  ListOrdered,
+  UserRound,
 } from "lucide-react";
 import { STATUS_LABELS, type EventStatus } from "@/lib/types";
 import { ThemeSelector } from "./theme-selector";
@@ -70,9 +71,14 @@ export function Header({ admin = false }: { admin?: boolean }) {
         <Link
           className="header-link"
           href={admin ? process.env.NEXT_PUBLIC_APP_URL || "/" : "/admin"}
+          aria-label={admin ? "리더보드 보기" : "교사 로그인"}
+          title={admin ? "리더보드 보기" : "교사 로그인"}
         >
-          {admin ? "리더보드 보기" : "교사 로그인"}
-          <ArrowUpRight size={15} />
+          {admin ? (
+            <ListOrdered size={20} aria-hidden="true" />
+          ) : (
+            <UserRound size={20} aria-hidden="true" />
+          )}
         </Link>
       </nav>
     </header>
