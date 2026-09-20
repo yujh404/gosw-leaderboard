@@ -13,6 +13,7 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { STATUS_LABELS, type EventStatus } from "@/lib/types";
+import { ThemeSelector } from "./theme-selector";
 
 export function TeamIcon({ id, size = 24 }: { id: number; size?: number }) {
   const Icon = [Code2, Terminal, Cpu, CircuitBoard, Shield][id - 1] ?? Trophy;
@@ -46,6 +47,7 @@ export function Header({ admin = false }: { admin?: boolean }) {
       </Link>
       <nav aria-label="주요 메뉴">
         <span className="school-name">경기오산소프트웨어고등학교</span>
+        <ThemeSelector />
         <Link
           className="header-link"
           href={admin ? process.env.NEXT_PUBLIC_APP_URL || "/" : "/admin"}

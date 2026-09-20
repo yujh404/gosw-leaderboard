@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DEFAULT_THEME, themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,7 +12,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" data-theme={DEFAULT_THEME} suppressHydrationWarning>
+      <head>
+        {/* Apply saved colors before the page is painted. */}
+        <script
+          id="theme-init"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
+      </head>
       <body>
         <a href="#main-content" className="skip-link">
           본문으로 건너뛰기

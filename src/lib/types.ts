@@ -4,7 +4,7 @@ export const CLASSES = [
     name: "1반",
     department: "소프트웨어개발과",
     short: "SOFTWARE",
-    color: "#ae9bff",
+    color: "#7250ad",
     symbol: "code",
   },
   {
@@ -12,7 +12,7 @@ export const CLASSES = [
     name: "2반",
     department: "소프트웨어개발과",
     short: "SOFTWARE",
-    color: "#5dcaff",
+    color: "#176b99",
     symbol: "terminal",
   },
   {
@@ -20,7 +20,7 @@ export const CLASSES = [
     name: "3반",
     department: "임베디드학과",
     short: "EMBEDDED",
-    color: "#c1fa6b",
+    color: "#42751f",
     symbol: "cpu",
   },
   {
@@ -28,7 +28,7 @@ export const CLASSES = [
     name: "4반",
     department: "임베디드학과",
     short: "EMBEDDED",
-    color: "#ffb66e",
+    color: "#a45a19",
     symbol: "circuit",
   },
   {
@@ -36,7 +36,7 @@ export const CLASSES = [
     name: "5반",
     department: "정보보안학과",
     short: "SECURITY",
-    color: "#ff89b5",
+    color: "#ad3968",
     symbol: "shield",
   },
 ] as const;
