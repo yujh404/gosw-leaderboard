@@ -2875,20 +2875,53 @@ input[type="file"]::file-selector-button {
 }
 @media (max-width: 600px) {
   .site-header {
-    height: auto;
-    min-height: 110px;
-    flex-wrap: wrap;
-    gap: 14px;
-    padding-top: 16px;
-    padding-bottom: 14px;
+    height: 64px;
+    min-height: 64px;
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 0 12px;
+  }
+  .brand {
+    flex-shrink: 0;
+    min-height: 44px;
+    gap: 6px;
+    font-size: 22px;
+  }
+  .brand-mark {
+    width: 28px;
+    height: 30px;
+    border-radius: 8px;
+  }
+  .brand-mark svg {
+    width: 18px;
+    height: 18px;
+  }
+  .brand small,
+  .theme-selector > svg,
+  .header-link > svg {
+    display: none;
   }
   .site-header nav {
-    width: 100%;
-    justify-content: space-between;
-    gap: 12px;
+    min-width: 0;
+    margin-left: auto;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .theme-selector {
+    min-width: 0;
   }
   .theme-selector select {
+    min-width: 0;
+    height: 44px;
     min-height: 44px;
+    padding-inline: 6px;
+  }
+  .header-link {
+    flex-shrink: 0;
+    min-height: 44px;
+    align-items: center;
+    font-size: 10px;
+    white-space: nowrap;
   }
 }
 
