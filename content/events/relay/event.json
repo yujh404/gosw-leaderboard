@@ -1,0 +1,14 @@
+{
+  "name": "계주",
+  "description": "한 사람의 질주가 우리 반의 기록으로! 바통에 응원을 담아 마지막 주자까지 함께 달립니다.",
+  "rules": "[샘플 규칙 · 운영 교사가 최종 확정해 주세요]\n1. 각 반은 정해진 순서에 따라 주자를 배치합니다.\n2. 바통은 지정된 교체 구역 안에서 다음 주자에게 전달합니다.\n3. 다른 주자의 진로를 방해하지 않고 정해진 코스를 달립니다.\n4. 마지막 주자의 결승선 통과 순서로 순위를 정합니다.\n5. 주자 수, 구간 거리, 실격 기준과 순위별 점수는 경기 전에 별도로 안내합니다.",
+  "image": "image.webp",
+  "imageGeneration": {
+    "model": "gpt-image-2",
+    "size": "1536x864",
+    "quality": "high",
+    "outputFormat": "webp",
+    "outputCompression": 85,
+    "promptFile": "prompt.txt"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "줄다리기",
+  "description": "한마음, 한 방향! 반 친구들의 힘과 호흡을 모아 승부를 겨루는 줄다리기입니다.",
+  "rules": "[샘플 규칙 · 운영 교사가 최종 확정해 주세요]\n1. 양 팀은 같은 인원으로 참가하고 지정된 위치에서 준비합니다.\n2. 심판의 시작 신호에 맞춰 줄을 당깁니다.\n3. 중앙 표식이 정해진 승리선을 넘으면 해당 세트의 승리로 판정합니다.\n4. 줄을 몸이나 손목에 감지 않고, 종료 신호 뒤에는 천천히 힘을 풉니다.\n5. 참가 인원, 세트 수, 경기 방식과 승점은 경기 전에 별도로 안내합니다.",
+  "image": "image.webp",
+  "imageGeneration": {
+    "model": "gpt-image-2",
+    "size": "1536x864",
+    "quality": "high",
+    "outputFormat": "webp",
+    "outputCompression": 85,
+    "promptFile": "prompt.txt"
+  }
+}
