@@ -801,6 +801,10 @@ function RankRow({
   onRankAnimationFinished: (classId: number) => void;
 }) {
   const isFirst = team.rank === 1 && team.score > 0;
+  const scoreWidth =
+    topScore > 0 && team.score > 0
+      ? Math.max(2, (team.score / topScore) * 100)
+      : 0;
   return (
     <motion.div
       layout={!reducedMotion}
@@ -829,9 +833,9 @@ function RankRow({
         </span>
         <div className="score-track">
           <motion.span
-            animate={{
-              width: `${topScore ? Math.max(2, (team.score / topScore) * 100) : 0}%`,
-            }}
+            key={`${team.score}-${topScore}`}
+            initial={{ width: 0 }}
+            animate={{ width: `${scoreWidth}%` }}
             transition={{ duration: reducedMotion ? 0 : 0.8 }}
           />
         </div>

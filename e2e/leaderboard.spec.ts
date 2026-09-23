@@ -51,7 +51,7 @@ test("teacher manages events; independent student screens receive rankings, phot
   await page.getByRole("button", { name: "종목 등록", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByRole("button", { name: "점수 입력", exact: true }).click();
-  for (const [index, points] of [100, 80, 60, 40, 20].entries())
+  for (const [index, points] of [100, 80, 60, 40, 0].entries())
     await page.getByLabel(`1학년 ${index + 1}반`).fill(String(points));
   await page.getByRole("button", { name: "점수 저장", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -88,6 +88,9 @@ test("teacher manages events; independent student screens receive rankings, phot
   await eventStudent.goto("/");
   await eventStudent.getByRole("tab", { name: "반 대항 이어달리기" }).click();
   await expect(student.getByTestId("rank-1")).toHaveAttribute("data-rank", "1");
+  await expect(
+    student.getByTestId("rank-5").locator(".score-track > span"),
+  ).toHaveCSS("width", "0px");
   await expect(eventStudent.getByTestId("rank-5")).toHaveAttribute(
     "data-rank",
     "5",
@@ -115,10 +118,43 @@ test("teacher manages events; independent student screens receive rankings, phot
     );
     scrollPositions.push(await viewer.evaluate(() => window.scrollY));
   }
+  await student.evaluate(() => {
+    const row = document.querySelector('[data-testid="rank-4"]')!;
+    const observer = new MutationObserver(() => {
+      if (row.querySelector(".team-score strong")?.textContent !== "90") return;
+      const track = row.querySelector(".score-track")!;
+      const bar = track.querySelector("span")!;
+      document.documentElement.dataset.updatedScoreBarStart = String(
+        bar.getBoundingClientRect().width / track.getBoundingClientRect().width,
+      );
+      observer.disconnect();
+    });
+    observer.observe(row, { childList: true, subtree: true, characterData: true });
+  });
   await relay.getByRole("button", { name: "점수 입력", exact: true }).click();
   await page.getByLabel("1학년 4반").fill("90");
   await page.getByRole("button", { name: "점수 저장", exact: true }).click();
   await expect(student.getByTestId("rank-4")).toHaveAttribute("data-rank", "2");
+  await expect(student.locator("html")).toHaveAttribute(
+    "data-updated-score-bar-start",
+    /.+/,
+  );
+  expect(
+    Number(
+      await student.locator("html").getAttribute("data-updated-score-bar-start"),
+    ),
+  ).toBeLessThan(0.15);
+  await expect
+    .poll(() =>
+      student.getByTestId("rank-4").evaluate((row) => {
+        const track = row.querySelector(".score-track")!;
+        return (
+          track.querySelector("span")!.getBoundingClientRect().width /
+          track.getBoundingClientRect().width
+        );
+      }),
+    )
+    .toBeGreaterThan(0.85);
   await expect(eventStudent.getByTestId("rank-4")).toHaveAttribute(
     "data-rank",
     "2",
@@ -156,6 +192,13 @@ test("teacher manages events; independent student screens receive rankings, phot
         ) {
           document.documentElement.dataset.scoresAppliedAtRanking =
             String(atRanking);
+          const track = document.querySelector(
+            '[data-testid="rank-1"] .score-track',
+          )!;
+          document.documentElement.dataset.rebasedScoreBarStart = String(
+            track.querySelector("span")!.getBoundingClientRect().width /
+              track.getBoundingClientRect().width,
+          );
         }
         if (
           !document
@@ -209,6 +252,11 @@ test("teacher manages events; independent student screens receive rankings, phot
       "data-scores-applied-at-ranking",
       "true",
     );
+    expect(
+      Number(
+        await viewer.locator("html").getAttribute("data-rebased-score-bar-start"),
+      ),
+    ).toBeLessThan(0.15);
     await expect(viewer.locator("html")).toHaveAttribute(
       "data-celebrated-after-rank-moves",
       "true",
