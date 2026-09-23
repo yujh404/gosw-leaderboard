@@ -1,0 +1,10 @@
+{
+  "name": "6인 7각",
+  "description": "6명이 한 조가 되어 발을 맞춰 반환점을 도는 경기입니다.",
+  "rules": "1. 6인 1개 조로 팀을 이루어 경기를 진행한다.\n2. 인원이 적은 반에 맞춰 진행한다.\n3. 인원수가 딱 맞지 않는 경우 1조 주자가 한 번 더 참여한다.\n4. 모든 조가 먼저 반환점을 돌아온 팀이 승리한다.",
+  "image": "image.webp",
+  "imageGeneration": {
+    "tool": "image_gen",
+    "promptFile": "prompt.txt"
+  }
+}

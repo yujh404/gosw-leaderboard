@@ -1,0 +1,10 @@
+{
+  "name": "축구 과대항전 결승",
+  "description": "과대항전 결승으로 진행하는 8대 8 축구 경기입니다.",
+  "rules": "1. 과대항전으로 진행하며, 사전에 실시한 리그 규칙에 준하여 8대 8 경기를 진행한다.\n2. 전·후반 20분, 쉬는 시간 10분으로 진행한다.",
+  "image": "image.webp",
+  "imageGeneration": {
+    "tool": "image_gen",
+    "promptFile": "prompt.txt"
+  }
+}

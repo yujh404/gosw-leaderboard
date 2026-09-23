@@ -1,0 +1,10 @@
+{
+  "name": "서바이벌 깃발 잡기",
+  "description": "주자들이 깃발을 향해 달려 선점한 학생이 다음 경기에 진출합니다.",
+  "rules": "1. 출발선의 주자 수를 2로 나눈 개수만큼 깃발을 설치한다.\n2. 출발 신호가 울리면 전력으로 달려 깃발을 선점한 학생이 다음 경기에 진출한다.",
+  "image": "image.webp",
+  "imageGeneration": {
+    "tool": "image_gen",
+    "promptFile": "prompt.txt"
+  }
+}
