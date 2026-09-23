@@ -41,9 +41,17 @@ describe("server input boundaries", () => {
         .success,
     ).toBe(false);
   });
-  it("rejects duplicate IDs in a new event order", () => {
+  it("requires the previous order and rejects duplicate IDs", () => {
     const id = "9876fb36-e7c0-4d7a-bf77-baf123be3a0e";
-    expect(reorderInput.safeParse({ ids: [id, id] }).success).toBe(false);
-    expect(reorderInput.safeParse({ ids: [id] }).success).toBe(true);
+    expect(
+      reorderInput.safeParse({ ids: [id, id], expectedIds: [id] }).success,
+    ).toBe(false);
+    expect(
+      reorderInput.safeParse({ ids: [id], expectedIds: [id, id] }).success,
+    ).toBe(false);
+    expect(reorderInput.safeParse({ ids: [id] }).success).toBe(false);
+    expect(reorderInput.safeParse({ ids: [id], expectedIds: [id] }).success).toBe(
+      true,
+    );
   });
 });

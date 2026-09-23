@@ -3,7 +3,7 @@ import { getDb, transaction } from "./db";
 import { HttpError } from "./errors";
 import { emptyScores, type BoardSnapshot, type SportEvent } from "./types";
 import type { z } from "zod";
-import type { eventInput, editInput, scoreInput } from "./validation";
+import type { eventInput, editInput, scoreInput, reorderInput } from "./validation";
 
 const columns = `id, name, description, rules, status, photo_id AS "photoId", position, version, scores`;
 
@@ -77,19 +77,24 @@ export async function saveScores(
   return rows[0];
 }
 
-export async function reorderEvents(ids: string[]) {
+export async function reorderEvents({
+  ids,
+  expectedIds,
+}: z.infer<typeof reorderInput>) {
   await transaction(async (client) => {
     await client.query("SELECT pg_advisory_xact_lock(202601)");
     const { rows } = await client.query<{ id: string }>(
-      "SELECT id FROM events",
+      "SELECT id FROM events ORDER BY position, id",
     );
     if (
       rows.length !== ids.length ||
+      rows.length !== expectedIds.length ||
+      rows.some((event, index) => event.id !== expectedIds[index]) ||
       rows.some((event) => !ids.includes(event.id))
     ) {
       throw new HttpError(
         409,
-        "종목 목록이 변경되었습니다. 새로고침 후 다시 정렬해 주세요.",
+        "종목 목록이나 순서가 변경되었습니다. 새로고침 후 다시 정렬해 주세요.",
       );
     }
     await client.query(

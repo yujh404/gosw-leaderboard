@@ -62,10 +62,30 @@ test("teacher manages events; independent student screens receive rankings, phot
     .fill("다섯 반의 힘과 호흡이 하나가 되는 순간.");
   await page.getByRole("button", { name: "종목 등록", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
+  const initialOrder: string[] = (
+    await (await page.request.get("/api/board")).json()
+  ).events.map((event: { id: string }) => event.id);
   await page
     .getByRole("button", { name: "줄다리기 위로 이동", exact: true })
     .click();
   await expect(page.locator(".admin-event").first()).toContainText("줄다리기");
+  const reordered: string[] = (
+    await (await page.request.get("/api/board")).json()
+  ).events.map((event: { id: string }) => event.id);
+  expect(reordered).toEqual([...initialOrder].reverse());
+  expect(
+    (
+      await page.request.put("/api/events/order", {
+        headers: { Origin: origin },
+        data: { ids: initialOrder, expectedIds: initialOrder },
+      })
+    ).status(),
+  ).toBe(409);
+  expect(
+    (await (await page.request.get("/api/board")).json()).events.map(
+      (event: { id: string }) => event.id,
+    ),
+  ).toEqual(reordered);
 
   const studentContext = await browser.newContext();
   const eventContext = await browser.newContext({

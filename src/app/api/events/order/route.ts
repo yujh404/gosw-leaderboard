@@ -6,7 +6,7 @@ export async function PUT(request: Request) {
   return api(async () => {
     sameOrigin(request);
     await requireTeacher();
-    await reorderEvents((await jsonInput(request, reorderInput)).ids);
+    await reorderEvents(await jsonInput(request, reorderInput));
     return { ok: true };
   });
 }

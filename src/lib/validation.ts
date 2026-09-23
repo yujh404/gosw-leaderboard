@@ -17,11 +17,13 @@ export const scoreInput = z.object({
 export const editInput = eventInput.extend({
   version: z.number().int().positive(),
 });
+const orderIds = z
+  .array(z.uuid())
+  .max(100)
+  .refine((ids) => new Set(ids).size === ids.length);
 export const reorderInput = z.object({
-  ids: z
-    .array(z.uuid())
-    .max(100)
-    .refine((ids) => new Set(ids).size === ids.length),
+  ids: orderIds,
+  expectedIds: orderIds,
 });
 export const loginInput = z.object({
   username: z.string().trim().min(1).max(100),

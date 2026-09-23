@@ -70,12 +70,13 @@ export function AdminDashboard({ initial }: { initial: BoardSnapshot }) {
     setBusy(true);
     setError("");
     setMessage("");
-    const ids = board.events.map((event) => event.id);
+    const expectedIds = board.events.map((event) => event.id);
+    const ids = [...expectedIds];
     [ids[index], ids[index + direction]] = [ids[index + direction], ids[index]];
     try {
       await requestJson("/api/events/order", {
         method: "PUT",
-        ...jsonBody({ ids }),
+        ...jsonBody({ ids, expectedIds }),
       });
       await refresh();
       setMessage("경기 순서를 변경했습니다.");
